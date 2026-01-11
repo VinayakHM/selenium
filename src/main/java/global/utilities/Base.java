@@ -40,10 +40,10 @@ public abstract class Base {
                 .getProperty("isScreenshotRequired"));
         buildNumber = System.getProperty("buildNumber");
         sendEmail = Boolean.parseBoolean(System.getProperty("sendEmail", "false"));
-        emailTo = System.getProperty("emailTo", "qabot@bigbasket.com").split(",");
+        emailTo = System.getProperty("emailTo", "").split(",");
         gridMode = Boolean.parseBoolean(System.getProperty("gridMode"));
         jobName = System.getProperty("jobName");
-        trimmedServerName = serverName.replace("bbadmin:bask3t%23%40!@", "");
+        trimmedServerName = serverName.replace("", "");
         adminId = System.getProperty("adminId");
         adminPswd = System.getProperty("adminPswd");
     }
