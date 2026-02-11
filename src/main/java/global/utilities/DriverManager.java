@@ -53,6 +53,8 @@ public class DriverManager extends Base {
                 case "firefox":
                     startGeckoDriver();
                     FirefoxOptions firefoxOptions = new FirefoxOptions();
+                    firefoxOptions.addArguments("--headless");
+                    firefoxOptions.setAcceptInsecureCerts(true);
                     firefoxOptions.merge(capability);
                     return new FirefoxDriver(firefoxOptions);
 
@@ -66,6 +68,8 @@ public class DriverManager extends Base {
                     System.out.println("Selecting firefox as default browser.");
                     startGeckoDriver();
                     FirefoxOptions defaultOptions = new FirefoxOptions();
+                    defaultOptions.addArguments("--headless");
+                    defaultOptions.setAcceptInsecureCerts(true);
                     defaultOptions.merge(capability);
                     return new FirefoxDriver(defaultOptions);
             }
