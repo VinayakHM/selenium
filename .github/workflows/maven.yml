@@ -32,7 +32,7 @@ jobs:
       - name: Run TestNG Selenium tests
         run: |
           mvn clean test \
-            -Dbrowser=chrome \
+            -Dbrowser=firefox \
             -DbuildNumber=null \
             -DgridMode=false \
             -DserverName=dev \
