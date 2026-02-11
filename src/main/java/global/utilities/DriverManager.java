@@ -18,7 +18,7 @@ import java.util.HashMap;
 public class DriverManager extends Base {
     private static DriverManager driverManager = new DriverManager();
 
-    public DriverManager getInstance() {
+    public static DriverManager getInstance() {
         return driverManager;
     }
 
@@ -100,9 +100,9 @@ public class DriverManager extends Base {
         chromePrefs.put("download.default_directory", testAdminReportPath);
         ChromeOptions options = new ChromeOptions();
         options.setExperimentalOption("prefs", chromePrefs);
-        options.setCapability(CapabilityType.ACCEPT_SSL_CERTS, true);
+//        options.setCapability(CapabilityType.ACCEPT_SSL_CERTS, true);
         options.setCapability(ChromeOptions.CAPABILITY, options);
-        options.setCapability("locationContextEnabled", false);
+//        options.setCapability("locationContextEnabled", false);
         options.addArguments("--allow-running-insecure-content");
         options.addArguments("disable-infobars");
         return options;
@@ -113,15 +113,15 @@ public class DriverManager extends Base {
         switch (browserType) {
             case "firefox":
                 System.out.println("Opening firefox driver");
-                cap = DesiredCapabilities.firefox();
+//                cap = DesiredCapabilities.firefox();
                 break;
             case "chrome":
                 System.out.println("Opening chrome driver");
-                cap = DesiredCapabilities.chrome();
+//                cap = DesiredCapabilities.chrome();
                 break;
             default:
                 System.out.println("browser : \" + browserType + \" is invalid, Launching Firefox as browser of choice..");
-                cap = DesiredCapabilities.firefox();
+//                cap = DesiredCapabilities.firefox();
                 break;
         }
         return cap;
@@ -132,17 +132,17 @@ public class DriverManager extends Base {
         switch (browserType) {
             case "firefox":
                 System.out.println("Opening firefox driver");
-                cap = DesiredCapabilities.firefox();
+//                cap = DesiredCapabilities.firefox();
                 cap.merge(capability);
                 break;
             case "chrome":
                 System.out.println("Opening chrome driver");
-                cap = DesiredCapabilities.chrome();
+//                cap = DesiredCapabilities.chrome();
                 cap.merge(capability);
                 break;
             default:
                 System.out.println("browser : \" + browserType + \" is invalid, Launching Firefox as browser of choice..");
-                cap = DesiredCapabilities.firefox();
+//                cap = DesiredCapabilities.firefox();
                 cap.merge(capability);
                 break;
         }
