@@ -26,6 +26,14 @@ jobs:
       - name: Setup Chrome
         uses: browser-actions/setup-chrome@v1
 
+      - name: Install Firefox (non-snap)
+        run: |
+          sudo snap remove firefox || true
+          sudo add-apt-repository ppa:mozillateam/ppa -y
+          sudo apt-get update
+          sudo apt-get install -y firefox
+      
+
       - name: Verify Chrome
         run: chrome --version
 
