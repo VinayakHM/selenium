@@ -1,4 +1,4 @@
-name: Selenium TestNG Automation (Docker Grid)
+name: Selenium Docker Grid
 
 on:
   push:
@@ -11,50 +11,49 @@ jobs:
   selenium-tests:
     runs-on: ubuntu-latest
 
+    strategy:
+      matrix:
+        browser: [chrome, firefox]
+
     steps:
-      - name: Checkout source code
+      - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Set up JDK 17
+      - name: Start Selenium Grid
+        run: docker compose up -d
+
+      - name: Wait for Grid
+        run: |
+          echo "Waiting for Grid..."
+          for i in {1..30}; do
+            curl -s http://localhost:4444/status | grep ready && break
+            sleep 2
+          done
+
+      - name: Set up Java
         uses: actions/setup-java@v4
         with:
           distribution: temurin
           java-version: 17
           cache: maven
 
-      # 🐳 Start Selenium Grid
-      - name: Start Selenium Grid
-        run: |
-          docker compose up -d
-          sleep 20
-
-      # 🔎 Verify Grid ready
-      - name: Check Grid status
-        run: |
-          curl http://localhost:4444/status
-
-      # ▶ Run Selenium tests on Grid
-      - name: Run TestNG Selenium tests
+      - name: Run tests (${{ matrix.browser }})
         run: |
           mvn clean test \
-            -Dbrowser=chrome \
+            -Dbrowser=${{ matrix.browser }} \
             -DgridMode=true \
             -DgridUrl=http://localhost:4444/wd/hub \
-            -DbuildNumber=${{ github.run_number }} \
-            -DserverName=dev \
             -Dtestng=web.xml
 
-      # 📊 Upload reports
-      - name: Upload TestNG Reports
+      - name: Upload Reports
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: selenium-testng-reports
+          name: reports-${{ matrix.browser }}
           path: |
             target/surefire-reports
             test-output
 
-      # 🧹 Stop Grid
-      - name: Stop Selenium Grid
+      - name: Stop Grid
         if: always()
         run: docker compose down
