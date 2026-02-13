@@ -128,7 +128,7 @@ public class DriverManager extends Base {
 
             case "firefox":
                 FirefoxOptions firefoxOptions = new FirefoxOptions();
-                firefoxOptions.addArguments("--headless");
+//                firefoxOptions.addArguments("--headless");
                 return firefoxOptions;
 
             default:
