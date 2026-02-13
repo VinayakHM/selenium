@@ -1,4 +1,4 @@
-name: Selenium TestNG Automation
+name: Selenium TestNG Automation (Docker Grid)
 
 on:
   push:
@@ -9,7 +9,6 @@ on:
 
 jobs:
   selenium-tests:
-    name: Run Selenium Tests
     runs-on: ubuntu-latest
 
     steps:
@@ -23,29 +22,29 @@ jobs:
           java-version: 17
           cache: maven
 
-      - name: Setup Chrome
-        uses: browser-actions/setup-chrome@v1
-
-      - name: Install Firefox (non-snap)
+      # 🐳 Start Selenium Grid
+      - name: Start Selenium Grid
         run: |
-          sudo snap remove firefox || true
-          sudo add-apt-repository ppa:mozillateam/ppa -y
-          sudo apt-get update
-          sudo apt-get install -y firefox
-      
+          docker compose up -d
+          sleep 20
 
-      - name: Verify Chrome
-        run: chrome --version
+      # 🔎 Verify Grid ready
+      - name: Check Grid status
+        run: |
+          curl http://localhost:4444/status
 
+      # ▶ Run Selenium tests on Grid
       - name: Run TestNG Selenium tests
         run: |
           mvn clean test \
             -Dbrowser=chrome \
-            -DbuildNumber=null \
-            -DgridMode=false \
+            -DgridMode=true \
+            -DgridUrl=http://localhost:4444/wd/hub \
+            -DbuildNumber=${{ github.run_number }} \
             -DserverName=dev \
             -Dtestng=web.xml
 
+      # 📊 Upload reports
       - name: Upload TestNG Reports
         if: always()
         uses: actions/upload-artifact@v4
@@ -54,3 +53,8 @@ jobs:
           path: |
             target/surefire-reports
             test-output
+
+      # 🧹 Stop Grid
+      - name: Stop Selenium Grid
+        if: always()
+        run: docker compose down

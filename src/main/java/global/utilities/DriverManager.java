@@ -1,6 +1,7 @@
 package global.utilities;
 
 import io.github.bonigarcia.wdm.WebDriverManager;
+import org.openqa.selenium.Capabilities;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.chrome.ChromeDriver;
 import org.openqa.selenium.chrome.ChromeOptions;
@@ -23,7 +24,7 @@ public class DriverManager extends Base {
 
     public WebDriver getDriver() throws MalformedURLException {
         if (gridMode) {
-            return new RemoteWebDriver(new URL(""), getBrowserCapabilities(browser));
+            return new RemoteWebDriver(new URL("http://localhost:4444/wd/hub"), getBrowserCapabilities(browser));
         } else {
             switch (browser.toLowerCase()) {
                 case "firefox":
@@ -116,24 +117,25 @@ public class DriverManager extends Base {
         return options;
     }
 
-    private static DesiredCapabilities getBrowserCapabilities(String browserType) {
-        DesiredCapabilities cap = new DesiredCapabilities();
-        switch (browserType) {
-            case "firefox":
-                System.out.println("Opening firefox driver");
-//                cap = DesiredCapabilities.firefox();
-                break;
+    private static Capabilities getBrowserCapabilities(String browserType) {
+
+        switch (browserType.toLowerCase()) {
+
             case "chrome":
-                System.out.println("Opening chrome driver");
-//                cap = DesiredCapabilities.chrome();
-                break;
+                ChromeOptions chromeOptions = new ChromeOptions();
+//                chromeOptions.addArguments("--headless=new");
+                return chromeOptions;
+
+            case "firefox":
+                FirefoxOptions firefoxOptions = new FirefoxOptions();
+                firefoxOptions.addArguments("--headless");
+                return firefoxOptions;
+
             default:
-                System.out.println("browser : \" + browserType + \" is invalid, Launching Firefox as browser of choice..");
-//                cap = DesiredCapabilities.firefox();
-                break;
+                throw new RuntimeException("Browser not supported: " + browserType);
         }
-        return cap;
     }
+
 
     private static DesiredCapabilities getBrowserCapabilities(String browserType, DesiredCapabilities capability) {
         DesiredCapabilities cap = new DesiredCapabilities();
