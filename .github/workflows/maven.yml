@@ -43,6 +43,8 @@ jobs:
             -Dbrowser=${{ matrix.browser }} \
             -DgridMode=true \
             -DgridUrl=http://localhost:4444/wd/hub \
+            -DbuildNumber=${{ github.run_number }} \
+            -DserverName=dev \
             -Dtestng=web.xml
 
       - name: Upload Reports
