@@ -25,14 +25,16 @@ jobs:
           distribution: temurin
           java-version: 17
 
-      - name: Start Selenium Grid
+      - name: Start Selenium Grid with Video
         run: |
           docker network create grid || true
 
+          # Hub
           docker run -d -p 4444:4444 --name selenium-hub \
             --network grid \
             selenium/hub:4.21.0
 
+          # Chrome node
           docker run -d --name chrome \
             --network grid \
             -e SE_EVENT_BUS_HOST=selenium-hub \
@@ -40,12 +42,28 @@ jobs:
             -e SE_EVENT_BUS_SUBSCRIBE_PORT=4443 \
             selenium/node-chrome:4.21.0
 
+          # Chrome video
+          docker run -d --name chrome-video \
+            --network grid \
+            -e DISPLAY_CONTAINER_NAME=chrome \
+            -v ${{ github.workspace }}/videos:/videos \
+            selenium/video:ffmpeg-4.3.1-20230607
+
+          # Firefox node
           docker run -d --name firefox \
             --network grid \
             -e SE_EVENT_BUS_HOST=selenium-hub \
             -e SE_EVENT_BUS_PUBLISH_PORT=4442 \
             -e SE_EVENT_BUS_SUBSCRIBE_PORT=4443 \
             selenium/node-firefox:4.21.0
+
+          # Firefox video
+          docker run -d --name firefox-video \
+            --network grid \
+            -e DISPLAY_CONTAINER_NAME=firefox \
+            -v ${{ github.workspace }}/videos:/videos \
+            selenium/video:ffmpeg-4.3.1-20230607
+      
 
       - name: Wait for Grid
         run: |
@@ -68,11 +86,25 @@ jobs:
             -DserverName=dev \
             -Dtestng=web.xml
 
+      - name: Stop video containers
+        if: always()
+        run: |
+          docker stop chrome-video || true
+          docker stop firefox-video || true
+
       - name: Upload reports
         if: always()
         uses: actions/upload-artifact@v4
         with:
           name: reports-${{ matrix.browser }}
           path: |
-            test-output/
-            playwright-report/
+            target/surefire-reports
+            test-output
+
+      - name: Upload videos
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: selenium-videos-${{ matrix.browser }}
+          path: videos
+
