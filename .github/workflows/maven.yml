@@ -1,41 +1,62 @@
-name: Selenium Docker Grid
+name: Docker Grid Playwright Tests
 
 on:
   push:
-    branches: [ main, develop ]
+    branches: [ main ]
   pull_request:
-    branches: [ main, develop ]
   workflow_dispatch:
 
 jobs:
-  selenium-tests:
+  tests:
     runs-on: ubuntu-latest
 
     strategy:
+      fail-fast: false
       matrix:
         browser: [chrome, firefox]
 
     steps:
-      - name: Checkout
+      - name: Checkout repo
         uses: actions/checkout@v4
 
-      - name: Start Selenium Grid
-        run: docker compose up -d
-
-      - name: Wait for Grid
-        run: |
-          echo "Waiting for Grid..."
-          for i in {1..30}; do
-            curl -s http://localhost:4444/status | grep ready && break
-            sleep 2
-          done
-
-      - name: Set up Java
+      - name: Set up JDK 17
         uses: actions/setup-java@v4
         with:
           distribution: temurin
           java-version: 17
-          cache: maven
+
+      - name: Start Selenium Grid
+        run: |
+          docker network create grid || true
+
+          docker run -d -p 4444:4444 --name selenium-hub \
+            --network grid \
+            selenium/hub:4.21.0
+
+          docker run -d --name chrome \
+            --network grid \
+            -e SE_EVENT_BUS_HOST=selenium-hub \
+            -e SE_EVENT_BUS_PUBLISH_PORT=4442 \
+            -e SE_EVENT_BUS_SUBSCRIBE_PORT=4443 \
+            selenium/node-chrome:4.21.0
+
+          docker run -d --name firefox \
+            --network grid \
+            -e SE_EVENT_BUS_HOST=selenium-hub \
+            -e SE_EVENT_BUS_PUBLISH_PORT=4442 \
+            -e SE_EVENT_BUS_SUBSCRIBE_PORT=4443 \
+            selenium/node-firefox:4.21.0
+
+      - name: Wait for Grid
+        run: |
+          echo "Waiting for Selenium Grid..."
+          for i in {1..30}; do
+            if curl -s http://localhost:4444/status | grep -q "ready"; then
+              echo "Grid ready"
+              break
+            fi
+            sleep 2
+          done
 
       - name: Run tests (${{ matrix.browser }})
         run: |
@@ -47,15 +68,11 @@ jobs:
             -DserverName=dev \
             -Dtestng=web.xml
 
-      - name: Upload Reports
+      - name: Upload reports
         if: always()
         uses: actions/upload-artifact@v4
         with:
           name: reports-${{ matrix.browser }}
           path: |
-            target/surefire-reports
-            test-output
-
-      - name: Stop Grid
-        if: always()
-        run: docker compose down
+            test-output/
+            playwright-report/

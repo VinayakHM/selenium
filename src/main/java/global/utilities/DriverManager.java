@@ -24,7 +24,7 @@ public class DriverManager extends Base {
 
     public WebDriver getDriver() throws MalformedURLException {
         if (gridMode) {
-            return new RemoteWebDriver(new URL("http://localhost:4444/wd/hub"), getBrowserCapabilities(browser));
+            return new RemoteWebDriver(new URL(System.getProperty("gridUrl")), getBrowserCapabilities(browser));
         } else {
             switch (browser.toLowerCase()) {
                 case "firefox":
